@@ -10,7 +10,7 @@ class DevAnik extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text('Developer Anik Branch check'),
+            Text('Developer Anik Branch'),
           ],
         ),
       ),
