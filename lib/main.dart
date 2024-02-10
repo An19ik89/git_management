@@ -1,125 +1,154 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:git_management/bloc.dart';
+import 'package:git_management/state.dart';
+
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+      home: BlocProvider(
+        create: (context) => CarouselBloc(5), // Adjust the image count as needed
+        child: MyHomePage(),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
+class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: Text('Image Carousel'),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times: from Developer Anik',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
+      body: BlocBuilder<CarouselBloc, CarouselState>(
+        builder: (context, state) {
+          // Build your carousel UI using the state
+          // You can use state.isFavorited, state.isAwarded, etc. to determine the status of each image
+          // and display the appropriate UI elements.
+
+          // Example:
+          return ListView.builder(
+            itemCount: state.isFavorited.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text('Image $index'),
+                subtitle: Text('Status: ${state.isFavorited[index] ? 'Favorited' : 'Not Favorited'}'),
+                // Add buttons and logic to handle button clicks
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: state.isFavorited[index] ? const Icon(Icons.favorite) : const Icon(Icons.favorite_border),
+                      onPressed: () {
+                        context.read<CarouselBloc>().add(ButtonClickedEvent(index, 'favorite'));
+                      },
+                    ),
+                    IconButton(
+                      icon: state.isAwarded[index] ? const Icon(Icons.star) : const Icon(Icons.star_border),
+                      onPressed: () {
+                        context.read<CarouselBloc>().add(ButtonClickedEvent(index, 'award'));
+                      },
+                    ),
+                    IconButton(
+                      icon: state.isClosed[index] ? const Icon(Icons.close) : const Icon(Icons.close),
+                      onPressed: () {
+                        context.read<CarouselBloc>().add(ButtonClickedEvent(index, 'close'));
+                      },
+                    ),
+                    IconButton(
+                      icon: state.isChatted[index] ? const Icon(Icons.chat) : const Icon(Icons.chat_bubble_outline),
+                      onPressed: () {
+                        context.read<CarouselBloc>().add(ButtonClickedEvent(index, 'chat'));
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
+
+abstract class CarouselEvent extends Equatable{}
+
+class ButtonClickedEvent extends CarouselEvent {
+  final int imageIndex;
+  final String buttonType;
+
+  ButtonClickedEvent(this.imageIndex, this.buttonType);
+
+  @override
+  List<Object?> get props => [imageIndex, buttonType];
+}
+
+class CarouselBloc extends Bloc<CarouselEvent, CarouselState> {
+  CarouselBloc(int imageCount)
+      : super(CarouselState(
+    isFavorited: List.generate(imageCount, (index) => false),
+    isAwarded: List.generate(imageCount, (index) => false),
+    isClosed: List.generate(imageCount, (index) => false),
+    isChatted: List.generate(imageCount, (index) => false),
+  )
+  );
+
+  @override
+  Stream<CarouselState> mapEventToState(CarouselEvent event) async* {
+    if (event is ButtonClickedEvent) {
+      final List<bool> newFavorited = List.from(state.isFavorited);
+      final List<bool> newAwarded = List.from(state.isAwarded);
+      final List<bool> newClosed = List.from(state.isClosed);
+      final List<bool> newChatted = List.from(state.isChatted);
+
+      switch (event.buttonType) {
+        case 'favorite':
+          newFavorited[event.imageIndex] = !state.isFavorited[event.imageIndex];
+          break;
+        case 'award':
+          newAwarded[event.imageIndex] = !state.isAwarded[event.imageIndex];
+          break;
+        case 'close':
+          newClosed[event.imageIndex] = !state.isClosed[event.imageIndex];
+          break;
+        case 'chat':
+          newChatted[event.imageIndex] = !state.isChatted[event.imageIndex];
+          break;
+      }
+
+      yield CarouselState(
+        isFavorited: newFavorited,
+        isAwarded: newAwarded,
+        isClosed: newClosed,
+        isChatted: newChatted,
+      );
+    }
+  }
+}
+
+class CarouselState extends Equatable {
+  final List<bool> isFavorited;
+  final List<bool> isAwarded;
+  final List<bool> isClosed;
+  final List<bool> isChatted;
+
+  CarouselState({
+    required this.isFavorited,
+    required this.isAwarded,
+    required this.isClosed,
+    required this.isChatted,
+  });
+
+  @override
+  List<Object?> get props => [isFavorited, isAwarded, isClosed, isChatted];
+}
+
